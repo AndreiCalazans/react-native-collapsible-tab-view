@@ -118,7 +118,6 @@ export const Lazy: React.FC<{
   )
 
   const stylez = useAnimatedStyle(() => {
-    'worklet'
     return {
       opacity: opacity.value,
     }

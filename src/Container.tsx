@@ -1,10 +1,5 @@
 import React from 'react'
-import {
-  LayoutChangeEvent,
-  StyleSheet,
-  useWindowDimensions,
-  View,
-} from 'react-native'
+import { StyleSheet, useWindowDimensions, View } from 'react-native'
 import PagerView from 'react-native-pager-view'
 import Animated, {
   runOnJS,
@@ -27,6 +22,7 @@ import {
   useContainerRef,
   usePageScrollHandler,
   useTabProps,
+  useLayoutHeight,
 } from './hooks'
 import {
   CollapsibleProps,
@@ -93,13 +89,12 @@ export const Container = React.memo(
       const windowWidth = useWindowDimensions().width
       const width = customWidth ?? windowWidth
 
-      const containerHeight = useSharedValue<number | undefined>(undefined)
+      const [containerHeight, getContainerLayoutHeight] = useLayoutHeight()
 
-      const tabBarHeight = useSharedValue<number | undefined>(
-        initialTabBarHeight
-      )
+      const [tabBarHeight, getTabBarHeight] =
+        useLayoutHeight(initialTabBarHeight)
 
-      const headerHeight = useSharedValue<number | undefined>(
+      const [headerHeight, getHeaderHeight] = useLayoutHeight(
         !renderHeader ? 0 : initialHeaderHeight
       )
 
@@ -108,9 +103,7 @@ export const Container = React.memo(
 
         // necessary for the refresh control on iOS to be positioned underneath the header
         // this also adjusts the scroll bars to clamp underneath the header area
-        return IS_IOS
-          ? (headerHeight.value || 0) + (tabBarHeight.value || 0)
-          : 0
+        return IS_IOS ? (headerHeight || 0) + (tabBarHeight || 0) : 0
       })
 
       const snappingTo: ContextType['snappingTo'] = useSharedValue(0)
@@ -144,9 +137,7 @@ export const Container = React.memo(
       const calculateNextOffset = useSharedValue(index.value)
       const headerScrollDistance: ContextType['headerScrollDistance'] =
         useDerivedValue(() => {
-          return headerHeight.value !== undefined
-            ? headerHeight.value - minHeaderHeight
-            : 0
+          return headerHeight !== undefined ? headerHeight - minHeaderHeight : 0
         }, [headerHeight, minHeaderHeight])
 
       const indexDecimal: ContextType['indexDecimal'] = useSharedValue(
@@ -242,7 +233,7 @@ export const Container = React.memo(
       )
 
       useAnimatedReaction(
-        () => headerHeight.value,
+        () => headerHeight,
         (_current, prev) => {
           if (prev === undefined) {
             // sync scroll if we started with undefined header height
@@ -266,32 +257,6 @@ export const Container = React.memo(
           ],
         }
       }, [revealHeaderOnScroll])
-
-      const getHeaderHeight = React.useCallback(
-        (event: LayoutChangeEvent) => {
-          const height = event.nativeEvent.layout.height
-          if (headerHeight.value !== height) {
-            headerHeight.value = height
-          }
-        },
-        [headerHeight]
-      )
-
-      const getTabBarHeight = React.useCallback(
-        (event: LayoutChangeEvent) => {
-          const height = event.nativeEvent.layout.height
-          if (tabBarHeight.value !== height) tabBarHeight.value = height
-        },
-        [tabBarHeight]
-      )
-
-      const onLayout = React.useCallback(
-        (event: LayoutChangeEvent) => {
-          const height = event.nativeEvent.layout.height
-          if (containerHeight.value !== height) containerHeight.value = height
-        },
-        [containerHeight]
-      )
 
       const onTabPress = React.useCallback(
         (name: TabName) => {
@@ -381,7 +346,7 @@ export const Container = React.memo(
         >
           <Animated.View
             style={[styles.container, { width }, containerStyle]}
-            onLayout={onLayout}
+            onLayout={getContainerLayoutHeight}
             pointerEvents="box-none"
           >
             <Animated.View
