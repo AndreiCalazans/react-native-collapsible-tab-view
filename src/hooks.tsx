@@ -22,7 +22,6 @@ import Animated, {
   interpolate,
   runOnJS,
   runOnUI,
-  useDerivedValue,
   useEvent,
   useHandler,
   AnimatedRef,
@@ -280,7 +279,7 @@ export const useScrollHandlerY = (name: TabName) => {
         scrollTo(ref, 0, y, false, `[${name}] restore scroll position - enable`)
       }
     },
-    [enabled, name, refMap, scrollTo, scrollY.value, scrollYCurrent.value]
+    [name, refMap, scrollTo]
   )
 
   /**
@@ -290,11 +289,6 @@ export const useScrollHandlerY = (name: TabName) => {
    * call it to sync the scenes.
    */
   const afterDrag = useSharedValue(0)
-
-  const tabIndex = useMemo(
-    () => tabNames.value.findIndex((n) => n === name),
-    [tabNames, name]
-  )
 
   const scrollAnimation = useSharedValue<number | undefined>(undefined)
 
@@ -359,11 +353,6 @@ export const useScrollHandlerY = (name: TabName) => {
     }
   }
 
-  const contentHeight = useDerivedValue(() => {
-    const tabIndex = tabNames.value.indexOf(name)
-    return contentHeights.value[tabIndex] || Number.MAX_VALUE
-  }, [])
-
   const scrollHandler = useAnimatedScrollHandler(
     {
       onScroll: (event) => {
@@ -374,10 +363,13 @@ export const useScrollHandlerY = (name: TabName) => {
             let { y } = event.contentOffset
             // normalize the value so it starts at 0
             y = y + contentInset.value
+
+            const contentHeight =
+              contentHeights.value[tabNames.value.indexOf(name)] ||
+              Number.MAX_VALUE
+
             const clampMax =
-              contentHeight.value -
-              (containerHeight.value || 0) +
-              contentInset.value
+              contentHeight - (containerHeight.value || 0) + contentInset.value
             // make sure the y value is clamped to the scrollable size (clamps overscrolling)
             scrollYCurrent.value = allowHeaderOverscroll
               ? y
@@ -512,7 +504,7 @@ export const useScrollHandlerY = (name: TabName) => {
         }
       }
     },
-    [revealHeaderOnScroll, refMap, snapThreshold, tabIndex, enabled, scrollTo]
+    [revealHeaderOnScroll, refMap, snapThreshold, enabled, scrollTo]
   )
 
   return { scrollHandler, enable }
@@ -586,7 +578,7 @@ export function useAfterMountEffect(
 export function useConvertAnimatedToValue<T>(
   animatedValue: Animated.SharedValue<T>
 ) {
-  const [value, setValue] = useState(animatedValue.value)
+  const [value, setValue] = useState<T>()
 
   useAnimatedReaction(
     () => {
@@ -600,7 +592,7 @@ export function useConvertAnimatedToValue<T>(
     [value]
   )
 
-  return value
+  return value || 0
 }
 
 export interface HeaderMeasurements {
