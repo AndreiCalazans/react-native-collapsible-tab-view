@@ -209,7 +209,7 @@ export type ContextType<T extends TabName = TabName> = {
    */
   contentHeights: SharedValue<number[]>
 
-  contentInset: SharedValue<number>
+  contentInset: number
 
   headerTranslateY: SharedValue<number>
 

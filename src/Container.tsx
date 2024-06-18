@@ -105,13 +105,13 @@ export const Container = React.memo(
         [initialTabName, tabNamesArray]
       )
 
-      const contentInset = useDerivedValue(() => {
+      const contentInset = React.useMemo(() => {
         if (allowHeaderOverscroll) return 0
 
         // necessary for the refresh control on iOS to be positioned underneath the header
         // this also adjusts the scroll bars to clamp underneath the header area
         return IS_IOS ? (headerHeight || 0) + (tabBarHeight || 0) : 0
-      })
+      }, [headerHeight, tabBarHeight, allowHeaderOverscroll])
 
       const snappingTo: ContextType['snappingTo'] = useSharedValue(0)
       const offset: ContextType['offset'] = useSharedValue(0)
@@ -161,7 +161,7 @@ export const Container = React.memo(
           scrollToImpl(
             refMap[name],
             0,
-            scrollYCurrent.value - contentInset.value,
+            scrollYCurrent.value - contentInset,
             false
           )
         }
@@ -270,7 +270,7 @@ export const Container = React.memo(
             runOnUI(scrollToImpl)(
               ref,
               0,
-              headerScrollDistance.value - contentInset.value,
+              headerScrollDistance.value - contentInset,
               true
             )
           } else {

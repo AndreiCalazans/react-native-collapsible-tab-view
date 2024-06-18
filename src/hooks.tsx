@@ -238,9 +238,9 @@ export function useScroller<T extends RefComponent>() {
       if (!ref) return
       //! this is left here on purpose to ease troubleshooting (uncomment when necessary)
       // console.log(
-      //   `${_debugKey}, y: ${y}, y adjusted: ${y - contentInset.value}`
+      //   `${_debugKey}, y: ${y}, y adjusted: ${y - contentInset}`
       // )
-      scrollToImpl(ref, x, y - contentInset.value, animated)
+      scrollToImpl(ref, x, y - contentInset, animated)
     },
     [contentInset]
   )
@@ -370,14 +370,14 @@ export const useScrollHandlerY = (name: TabName) => {
           if (IS_IOS) {
             let { y } = event.contentOffset
             // normalize the value so it starts at 0
-            y = y + contentInset.value
+            y = y + contentInset
 
             const contentHeight =
               contentHeights.value[tabNames.value.indexOf(name)] ||
               Number.MAX_VALUE
 
             const clampMax =
-              contentHeight - (containerHeight || 0) + contentInset.value
+              contentHeight - (containerHeight || 0) + contentInset
             // make sure the y value is clamped to the scrollable size (clamps overscrolling)
             scrollYCurrent.value = allowHeaderOverscroll
               ? y
