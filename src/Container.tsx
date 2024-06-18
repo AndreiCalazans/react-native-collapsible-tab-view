@@ -281,11 +281,14 @@ export const Container = React.memo(
         [containerRef, refMap, contentInset]
       )
 
-      React.useEffect(() => {
-        if (index.value >= tabNamesArray.length) {
-          onTabPress(tabNamesArray[tabNamesArray.length - 1])
+      useAnimatedReaction(
+        () => tabNamesArray.length,
+        (tabLength) => {
+          if (index.value >= tabLength) {
+            runOnJS(onTabPress)(tabNamesArray[tabLength - 1])
+          }
         }
-      }, [index.value, onTabPress, tabNamesArray])
+      )
 
       const pageScrollHandler = usePageScrollHandler({
         onPageScroll: (e) => {
@@ -398,7 +401,7 @@ export const Container = React.memo(
             <AnimatedPagerView
               ref={containerRef}
               onPageScroll={pageScrollHandler}
-              initialPage={index.value}
+              initialPage={initialIndex}
               {...pagerProps}
               style={[pagerProps?.style, StyleSheet.absoluteFill]}
             >
