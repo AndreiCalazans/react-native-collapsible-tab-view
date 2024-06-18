@@ -97,6 +97,13 @@ export const Container = React.memo(
       const [headerHeight, getHeaderHeight] = useLayoutHeight(
         !renderHeader ? 0 : initialHeaderHeight
       )
+      const initialIndex = React.useMemo(
+        () =>
+          initialTabName
+            ? tabNamesArray.findIndex((n) => n === initialTabName)
+            : 0,
+        [initialTabName, tabNamesArray]
+      )
 
       const contentInset = useDerivedValue(() => {
         if (allowHeaderOverscroll) return 0
@@ -124,17 +131,13 @@ export const Container = React.memo(
         () => tabNamesArray,
         [tabNamesArray]
       )
-      const index: ContextType['index'] = useSharedValue(
-        initialTabName
-          ? tabNames.value.findIndex((n) => n === initialTabName)
-          : 0
-      )
+      const index: ContextType['index'] = useSharedValue(initialIndex)
 
       const focusedTab: ContextType['focusedTab'] =
         useDerivedValue<TabName>(() => {
           return tabNames.value[index.value]
         }, [tabNames])
-      const calculateNextOffset = useSharedValue(index.value)
+      const calculateNextOffset = useSharedValue(initialIndex)
       const headerScrollDistance: ContextType['headerScrollDistance'] =
         useDerivedValue(() => {
           return headerHeight !== undefined ? headerHeight - minHeaderHeight : 0
